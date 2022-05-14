@@ -35,7 +35,7 @@ client = Snake(
     intents=Intents.ALL,
     sync_interactions=True,
     delete_unused_application_cmds=True,
-    activity=Activity(type=ActivityType.LISTENING, name="your one stop shop for music."),
+    activity=Activity(type=ActivityType.LISTENING, name="your one stop shop for music."), #This can be changed. It's just what I had for my bot.
     send_command_tracebacks=True
 )
 
