@@ -48,7 +48,7 @@ async def on_ready():
             guild_list = [g for g in client.guilds]
             text = "\n".join(f"{idx}) {g.name}" for idx, g in enumerate(guild_list))
             banner()
-            choice = int(input(f"{text}\n000) Quit\n\nChoose a guild: "))
+            choice = int(input(f"{text}\n999) Quit\n\nChoose a guild: "))
             clear()
         except Exception:
             clear()
@@ -57,7 +57,7 @@ async def on_ready():
             clear()
             continue
 
-        if choice == 000:
+        if choice == 999:
             exit("Goodbye!")
 
 
@@ -74,7 +74,7 @@ async def on_ready():
             text2 = "\n".join(f"{idx}) {ch.name}" for idx, ch in enumerate(channel_list))
             try:
                 banner()
-                choice2 = int(input(f"Currently in: {guild}\n\n{text2}\n000) Back\n\nChoose a channel: "))
+                choice2 = int(input(f"Currently in: {guild}\n\n{text2}\n999) Back\n\nChoose a channel: "))
                 clear()
             except Exception:
                 clear()
@@ -83,7 +83,7 @@ async def on_ready():
                 clear()
                 continue
 
-            if choice2 == 000:
+            if choice2 == 999:
                 guild = None
                 channel_list = None
                 text2 = None
