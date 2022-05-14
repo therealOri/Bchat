@@ -34,7 +34,7 @@ def clear():
 client = Snake(
     intents=Intents.ALL,
     sync_interactions=True,
-    delete_unused_application_cmds=True,
+    delete_unused_application_cmds=False, # If you have duplicate / commands showing up, set this to True and run the script. This should be done once then back to False.
     activity=Activity(type=ActivityType.LISTENING, name="your one stop shop for music."), #This can be changed. It's just what I had for my bot.
     send_command_tracebacks=True
 )
