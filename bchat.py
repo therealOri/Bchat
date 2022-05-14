@@ -41,15 +41,6 @@ client = Snake(
 
 
 @listen()
-async def on_message_create(event):
-    print(f"Message received: {event.message.content}")
-
-
-
-
-
-
-@listen()
 async def on_ready():
     clear()
     while True:
