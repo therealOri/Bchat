@@ -1,3 +1,2 @@
-orjson 
-dis-snek 
-python-dotenv
+discord.py
+beaupy
