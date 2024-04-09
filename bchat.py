@@ -1,17 +1,32 @@
-import dis_snek
 import os
-from datetime import datetime
-from dotenv import load_dotenv
+import beaupy
+import discord
+from discord import app_commands
+import tomllib
+import asyncio
 
-from dis_snek import listen, Snake, Activity, ActivityType, Intents, GuildText
 
-#token
-load_dotenv()
-token = os.getenv('TOKEN')
+
+def load_config(file_name):
+    with open('config.toml', 'rb') as fileObj:
+        config = tomllib.load(fileObj)
+    return config
+
+
+
+
+# Definitions
+config = load_config('config.')
+TOKEN = config["bot_token"]
+
+
+
+
+
 
 
 def banner():
-    return print("""
+    print("""
 
                 ██████╗  ██████╗██╗  ██╗ █████╗ ████████╗
                 ██╔══██╗██╔════╝██║  ██║██╔══██╗╚══██╔══╝
@@ -20,8 +35,7 @@ def banner():
                 ██████╔╝╚██████╗██║  ██║██║  ██║   ██║   
                 ╚═════╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝                       
                                                     
-      Made by Ori#6338 | @therealOri_ | https://github.com/therealOri
-
+           Made by @therealOri_ | https://github.com/therealOri
 
 """)
 
@@ -30,81 +44,96 @@ def clear():
     os.system("clear||cls")
 
 
-#bot config
-client = Snake(
-    intents=Intents.ALL,
-    sync_interactions=True,
-    delete_unused_application_cmds=False, # If you have duplicate / commands showing up, set this to True and run the script. This should be done once then back to False.
-    activity=Activity(type=ActivityType.LISTENING, name="your one stop shop for music."), #This can be changed. It's just what I had for my bot.
-    send_command_tracebacks=True
-)
+################### Client Setup ###################
+class ManualBot(discord.Client):
+    def __init__(self, *, intents: discord.Intents):
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
 
 
-@listen()
+
+intents = discord.Intents.default()
+intents.guilds = True
+intents.messages = True
+intents.message_content = True
+manual = ManualBot(intents=intents)
+################### Client Setup ###################
+
+
+
+
+@manual.event
 async def on_ready():
     clear()
+    dash=60
     while True:
-        try:
-            guild_list = [g for g in client.guilds]
-            text = "\n".join(f"{idx}) {g.name}" for idx, g in enumerate(guild_list))
-            banner()
-            choice = int(input(f"{text}\n999) Quit\n\nChoose a guild: "))
-            clear()
-        except Exception:
-            clear()
-            print("The input you entered is not an integer. Please try again...")
-            input('press enter to continue...')
-            clear()
-            continue
+        bot_guilds = manual.guilds
+        guild_list = []
+        for _ in bot_guilds:
+            guild_list.append(_.name)
 
-        if choice == 999:
-            exit("Goodbye!")
+        guild_list += ["Quit?"]
+        banner()
+        print(f'What server would you like to talk in?\n{"-"*dash}\n')
+        main_option = beaupy.select(guild_list, cursor_style="#ffa533")
 
-
-        if choice >= len(guild_list):
-            print("Invalid number/not an option. Please try again...")
-            input('press enter to continue...')
+        if not main_option:
+            await manual.close()
             clear()
-            continue
-            
+            print("Keyboard Interuption Detected!\nGoodbye <3")
+
+
+        if guild_list[-1] in main_option:
+            await manual.close()
+            clear()
+            print("Goodbye! <3")
+
+
+
+
+        guild = discord.utils.get(manual.guilds, name=main_option)
+        channel_list = []
+        for channel in await guild.fetch_channels():
+            if isinstance(channel, discord.TextChannel) and channel.permissions_for(guild.me).send_messages:
+                channel_list.append(channel.name)
+            else:
+                pass
+        channel_list += [" "]
+        channel_list += [" "]
+        channel_list += ["[+] -=-=-=- Back to server selector? -=-=-=- [+]"]
 
         while True:
-            guild = guild_list[choice]
-            channel_list = [channel for channel in guild.channels if isinstance(channel, GuildText)]
-            text2 = "\n".join(f"{idx}) {ch.name}" for idx, ch in enumerate(channel_list))
-            try:
-                banner()
-                choice2 = int(input(f"Currently in: {guild}\n\n{text2}\n999) Back\n\nChoose a channel: "))
-                clear()
-            except Exception:
-                clear()
-                print("The input you entered is not an integer. Please try again...")
-                input('press enter to continue...')
-                clear()
-                continue
+            clear()
+            banner()
+            print(f'What channel would you like to talk in?\n(Currently in "{guild.name}")\n{"-"*dash}\n')
+            second_option = beaupy.select(channel_list, cursor_style="#ffa533")
 
-            if choice2 == 999:
-                guild = None
-                channel_list = None
-                text2 = None
+
+            if not second_option:
+                clear()
                 break
 
-            if choice2 >= int(len(channel_list)) or '':
-                print("Invalid number/not an option. Please try again...")
-                input('press enter to continue...')
+            if channel_list[-1] == second_option:
+                clear()
+                break
+
+            if " " in second_option:
                 clear()
                 continue
 
-            else:
+            channel = discord.utils.get(guild.channels, name=second_option)
+            while True:
                 clear()
                 banner()
-                channel = channel_list[choice]
-                message = input("Message to send: ")
-                await channel.send(message)
-                clear()
+                print(f'Currently in channel: ("{channel.name}")')
+                msg = beaupy.prompt("What would you like to say? - (type 'q' to go back)")
+                if msg.lower() == 'q':
+                    break
+                else:
+                    await channel.send(msg)
+                    continue
 
 
 
 
-
-client.start(token)
+manual.run(TOKEN, reconnect=True, log_handler=None)
