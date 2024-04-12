@@ -191,4 +191,4 @@ async def on_ready():
 
 
 
-manual.run(TOKEN, reconnect=True, log_level=logging.INFO)
+manual.run(TOKEN, reconnect=True, log_level=logging.INFO) #log_handler=None to fix any issues with warnings showing up.
