@@ -166,12 +166,11 @@ async def on_ready():
                         clear()
                         banner()
                         print(f'Currently in channel: ("{channel.name}")')
-                        msg = beaupy.prompt("What would you like to say? - (type 'q' to go back)")
+                        msg = beaupy.prompt("What would you like to say? - (type 'q' to go back & 'f+' for files)")
                         if msg.lower() == 'q':
                             break
 
                         if msg.lower() == 'f+':
-                            #upload file from file path
                             attachment = beaupy.prompt("File path - (drag & drop)")
                             if not attachment or attachment.lower() == 'q':
                                 break
