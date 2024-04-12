@@ -169,6 +169,22 @@ async def on_ready():
                         msg = beaupy.prompt("What would you like to say? - (type 'q' to go back)")
                         if msg.lower() == 'q':
                             break
+
+                        if msg.lower() == 'f+':
+                            #upload file from file path
+                            attachment = beaupy.prompt("File path - (drag & drop)")
+                            if not attachment or attachment.lower() == 'q':
+                                break
+                            else:
+                                attachment = attachment.replace('\\', '').strip()
+                                d_file = discord.File(attachment)
+                                try:
+                                    await channel.send(file=d_file)
+                                except Exception as e:
+                                    clear()
+                                    input(f'Oops..and error has occured. (need permission to attach files in this channel.)\nError: {e}\n\nPress "enter" to continue...')
+                                continue
+
                         else:
                             await channel.send(msg)
                             continue
