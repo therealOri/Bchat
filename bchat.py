@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 import tomllib
 import asyncio
-import loggings
+import logging
 
 
 
