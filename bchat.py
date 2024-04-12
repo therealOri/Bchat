@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 import tomllib
 import asyncio
+import loggings
 
 
 
@@ -67,73 +68,112 @@ async def on_ready():
     clear()
     dash=60
     while True:
-        bot_guilds = manual.guilds
-        guild_list = []
-        for _ in bot_guilds:
-            guild_list.append(_.name)
-
-        guild_list += ["Quit?"]
+        main_menu_options = ['Dm a User?', 'Send Messages?', 'Exit?'] # updating the menu to get ready for future updates.
         banner()
-        print(f'What server would you like to talk in?\n{"-"*dash}\n')
-        main_option = beaupy.select(guild_list, cursor_style="#ffa533")
-
-        if not main_option:
-            await manual.close()
+        print(f'What would you like to do?\n{"-"*dash}\n')
+        menu_option = beaupy.select(main_menu_options, cursor_style="#ffa533")
+        
+        if not menu_option:
             clear()
             print("Keyboard Interuption Detected!\nGoodbye <3")
+            await manual.close() # This isn't the best way or probably the right way to close out and exit..but it's what I've got for now.
 
 
-        if guild_list[-1] in main_option:
-            await manual.close()
+        # Send DMs
+        if main_menu_options[0] in menu_option:
             clear()
-            print("Goodbye! <3")
+            flag=True
+            while flag:
+                user_id = beaupy.prompt("User ID")
+                if not user_id:
+                    clear()
+                    break
+                try:
+                    user_id = int(user_id)
+                    flag=False
+                except Exception as e:
+                    clear()
+                    input(f'Oops, an error has occured...\nError: {e}\n\nPress "enter" to try again...')
+                    clear()
+                    continue
 
-
-
-
-        guild = discord.utils.get(manual.guilds, name=main_option)
-        channel_list = []
-        for channel in await guild.fetch_channels():
-            if isinstance(channel, discord.TextChannel) and channel.permissions_for(guild.me).send_messages:
-                channel_list.append(channel.name)
-            else:
-                pass
-        channel_list += [" "]
-        channel_list += [" "]
-        channel_list += ["[+] -=-=-=- Back to server selector? -=-=-=- [+]"]
-
-        while True:
-            clear()
-            banner()
-            print(f'What channel would you like to talk in?\n(Currently in "{guild.name}")\n{"-"*dash}\n')
-            second_option = beaupy.select(channel_list, cursor_style="#ffa533")
-
-
-            if not second_option:
-                clear()
-                break
-
-            if channel_list[-1] == second_option:
-                clear()
-                break
-
-            if " " in second_option:
+            if flag == True:
                 clear()
                 continue
 
-            channel = discord.utils.get(guild.channels, name=second_option)
+            msg = beaupy.prompt("Message to send")
+            member = await manual.fetch_user(int(user_id))
+            await member.send(msg)
+            input(f'@{member.name} has been DMed!\n\nPress "enter" to continue...')
+            clear()
+            continue
+
+
+
+        # Send Messages
+        if main_menu_options[1] in menu_option:
+            clear()
             while True:
-                clear()
+                bot_guilds = manual.guilds
+                guild_list = []
+                for _ in bot_guilds:
+                    guild_list.append(_.name)
+
+                guild_list += ["Back?"]
                 banner()
-                print(f'Currently in channel: ("{channel.name}")')
-                msg = beaupy.prompt("What would you like to say? - (type 'q' to go back)")
-                if msg.lower() == 'q':
+                print(f'What server would you like to talk in?\n{"-"*dash}\n')
+                guild_option = beaupy.select(guild_list, cursor_style="#ffa533")
+
+                if not guild_option:
+                    clear()
                     break
-                else:
-                    await channel.send(msg)
-                    continue
+
+                if guild_list[-1] in guild_option:
+                    clear()
+                    break
+
+                guild = discord.utils.get(manual.guilds, name=guild_option)
+                channel_list = []
+                for channel in await guild.fetch_channels():
+                    if isinstance(channel, discord.TextChannel) and channel.permissions_for(guild.me).send_messages:
+                        channel_list.append(channel.name)
+                    else:
+                        pass
+                channel_list += [" "]
+                channel_list += [" "]
+                channel_list += ["[+] -=-=-=- Back to server selector? -=-=-=- [+]"]
+
+                while True:
+                    clear()
+                    banner()
+                    print(f'What channel would you like to talk in?\n(Currently in name="{guild.name}" id="{guild.id}")\n{"-"*dash}\n')
+                    channel_option = beaupy.select(channel_list, cursor_style="#ffa533")
+
+                    if not channel_option:
+                        clear()
+                        break
+
+                    if channel_list[-1] == channel_option:
+                        clear()
+                        break
+
+                    if " " in channel_option:
+                        clear()
+                        continue
+
+                    channel = discord.utils.get(guild.channels, name=channel_option)
+                    while True:
+                        clear()
+                        banner()
+                        print(f'Currently in channel: ("{channel.name}")')
+                        msg = beaupy.prompt("What would you like to say? - (type 'q' to go back)")
+                        if msg.lower() == 'q':
+                            break
+                        else:
+                            await channel.send(msg)
+                            continue
 
 
 
 
-manual.run(TOKEN, reconnect=True, log_handler=None)
+manual.run(TOKEN, reconnect=True, log_level=logging.INFO)
